@@ -54,15 +54,21 @@ jobs:
       # Step-7 Add API files to Zip file
       - name: Add API files to Zip file
         run: |
-          cd ./api
+          cd ./api  # Ajusta el directorio si es necesario
           zip -g ../api.zip -r .
 
-      # Step-8 Upload zip file artifact
+      # Step-8 Verify Zip Content
+      - name: Verify Zip Content
+        run: |
+          unzip -l api.zip
+
+      # Step-9 Upload zip file artifact
       - name: Upload zip file artifact
         uses: actions/upload-artifact@v2
         with:
           name: api
           path: api.zip
+          
   CD:
     runs-on: ubuntu-latest
     needs: [CI]
@@ -73,7 +79,7 @@ jobs:
         with:
           version: 1
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_SECRET_ACCESS_KEY_ID }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }} # Asegúrate que el nombre del secreto sea correcto
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
       - name: Download Lambda api.zip
@@ -83,12 +89,12 @@ jobs:
       - name: Upload to S3
         run: aws s3 cp api.zip s3://fastapi1243/api.zip
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_SECRET_ACCESS_KEY_ID }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }} # Asegúrate que el nombre del secreto sea correcto
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
       - name: Deploy new Lambda
         run: aws lambda update-function-code --function-name fastapi --s3-bucket fastapi1243 --s3-key api.zip
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_SECRET_ACCESS_KEY_ID }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }} # Asegúrate que el nombre del secreto sea correcto
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}

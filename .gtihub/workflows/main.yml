@@ -1,0 +1,58 @@
+name : FasAPI CI/CD
+
+on:
+  #Activar el flujo de trabajo al enviar
+  push:
+    #eventos push en la rama principal
+    - main
+#El trabajo define una serie de pasos que se ejecutan en el mismo ejecutor.
+jobs:
+
+    CI:
+      #Especificar que maquina deseamos correr
+      runs-on: ubuntu-latest
+      steps:
+        #Consulte el repositorio para que nuestro flujo de trabajo pueda acceder a él
+        - uses: actions/checkout@v2
+
+        #paso 1 setup Python
+        - name: Set up Python
+          #Esta acción configura un entorno de Python para su uso en acciones.
+          - uses: actions/setup-python@v2
+            with:
+              python-version: 3.10.10
+
+        #paso 2 intalar python virtual env
+        - name: Install Python Virtual Env
+          run: pip3 install virtualenv
+
+        #paso 3 setip virtual env
+        - name: Virtual Env
+          uses: actions/cache@v2
+          id: cache-venv
+          with:
+            path: venv # Lo que almacenamos en caché: el ENV virtual
+            # La clave de caché depende de requirements.txt
+            key: ${{ runner.os }}-venv-${{ hashFiles('**/requirements*.txt') }}
+            restore-keys: |
+              ${{ runner.os }}-venv-
+        # Paso 4: Cree un ENV virtual, pero solo si aún no existe
+        - name: Activate Virtual ENV
+          run: python -m venv venv && source venv/bin/activate && pip3 install -r requirements.txt
+          if: steps.cache-venv.outputs.cache-hit != 'true'
+
+        - name: Run Tests   
+          # Tenga en cuenta que debe activar el entorno virtual en cada paso.
+          # Porque las acciones de GitHub no preservan el medio ambiente.   
+          run: . venv/bin/activate && pytest
+        - name: Create archive of dependencies
+          run: |
+          cd ./venv/lib/python3.7/site-packages
+          zip -r9 ../../../../api.zip .
+        - name: Add API files to Zip file
+          run: cd ./api && zip -g ../api.zip -r .
+        - name: Upload zip file artifact
+          uses: actions/upload-artifact@v2
+          with:
+            name: api
+            path: api.zip

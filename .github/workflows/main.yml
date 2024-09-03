@@ -74,6 +74,15 @@ jobs:
     needs: [CI]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
+      - name: AWS_ACCESS_KEY_ID
+        run: echo "La variable secreta es ${{ secrets.AWS_ACCESS_KEY_ID }}"
+
+      - name: AWS_SECRET_ACCESS_KEY
+        run: echo "La variable secreta es ${{ secrets.AWS_SECRET_ACCESS_KEY }}"
+
+      - name: AWS_DEFAULT_REGION
+        run: echo "La variable secreta es ${{ secrets.AWS_DEFAULT_REGION }}"
+
       - name: Install AWS CLI
         uses: unfor19/install-aws-cli-action@v1
         with:

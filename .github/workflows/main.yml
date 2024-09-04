@@ -77,13 +77,12 @@ jobs:
 
     steps:
 
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v3
+      - name: Install AWS CLI
+        uses: unfor19/install-aws-cli-action@v2
         with:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          version: 1
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_SECRET_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: us-east-2
 
@@ -91,7 +90,7 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: api
-
+          
       - name: Upload to S3
         run: aws s3 cp api.zip s3://fastapi1243/api.zip
         env:

@@ -28,7 +28,7 @@ jobs:
           mkdir -p package
           pip install --target ./package -r requirements.txt
           cp -r ./*.py ./package/
-          cd package && zip -r ../function.zip . && cd ..
+          cd package && zip -r ../api.zip . && cd ..
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -45,4 +45,4 @@ jobs:
             --publish
 
       - name: Clean up
-        run: rm -rf package function.zip
+        run: rm -rf package api.zip

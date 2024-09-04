@@ -74,29 +74,20 @@ jobs:
     needs: [CI]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
-      
-      - name: Install AWS CLI
-        run: |
-              curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-              unzip awscliv2.zip
-              sudo ./aws/install
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }} # Asegúrate que el nombre del secreto sea correcto
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+      - uses: actions/checkout@v4
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: secrets.AWS_DEFAULT_REGION
+
       - name: Download Lambda api.zip
         uses: actions/download-artifact@v2
         with:
           name: api
       - name: Upload to S3
         run: aws s3 cp api.zip s3://fastapi1243/api.zip
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }} # Asegúrate que el nombre del secreto sea correcto
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+
       - name: Deploy new Lambda
         run: aws lambda update-function-code --function-name fastapi --s3-bucket fastapi1243 --s3-key api.zip
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }} # Asegúrate que el nombre del secreto sea correcto
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}

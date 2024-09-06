@@ -49,20 +49,20 @@ jobs:
           source venv/bin/activate
           mkdir -p build
           cd ./venv/lib/python3.10/site-packages
-          zip -r9 ../../../../build/api.zip .
+          zip -r9 ../../../../api.zip .
           cd - # go back to root
-          zip -g build/api.zip -r ./api # Ajusta la ruta de 'api' según sea necesario
+          zip -g api.zip -r ./api # Ajusta la ruta de 'api' según sea necesario
 
       # Step-7: Verify Zip Content
       - name: Verify Zip Content
-        run: unzip -l build/api.zip
+        run: unzip -l api.zip
 
       # Step-8: Upload zip file artifact
       - name: Upload zip file artifact
         uses: actions/upload-artifact@v3
         with:
           name: api
-          path: build/api.zip
+          path: api.zip
           
   CD:
     runs-on: ubuntu-latest

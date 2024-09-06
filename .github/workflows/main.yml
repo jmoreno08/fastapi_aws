@@ -50,7 +50,7 @@ jobs:
           cd venv/lib/python3.10/site-packages
           zip -r9 path/to/root/of/project/function.zip
           cd path/to/root/of/project
-          zip -g ./function.zip -r app
+          zip -g ./function.zip -r api
 
       # Step-7: Verify Zip Content
       - name: Verify Zip Content

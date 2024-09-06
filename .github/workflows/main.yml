@@ -1,8 +1,10 @@
 name: FastAPI CI/CD
+
 on:
   push:
     branches: 
       - main 
+
 jobs:
   CI:
     runs-on: ubuntu-latest
@@ -14,9 +16,11 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.10.10
+
       # Step-2 Install Python Virtual ENV
       - name: Install Python Virtual ENV
         run: pip install virtualenv
+
       # Step-3 Setup Virtual ENV Cache
       - name: Setup Virtual ENV Cache
         uses: actions/cache@v2
@@ -26,6 +30,7 @@ jobs:
           key: ${{ runner.os }}-venv-${{ hashFiles('**/requirements*.txt') }}
           restore-keys: |
             ${{ runner.os }}-venv-
+
       # Step-4 Create and Activate Virtual ENV, if not cached
       - name: Create and Activate Virtual ENV
         run: |
@@ -33,25 +38,30 @@ jobs:
           source venv/bin/activate
           pip install -r requirements.txt
         if: steps.cache-venv.outputs.cache-hit != 'true'
+
       # Step-5 Run Tests
       - name: Run Tests
         run: |
           source venv/bin/activate
           pytest
+
       # Step-6 Create archive of dependencies
       - name: Create archive of dependencies
         run: |
           cd ./venv/lib/python3.10/site-packages
           zip -r9 ../../../../api.zip .
+
       # Step-7 Add API files to Zip file
       - name: Add API files to Zip file
         run: |
           cd ./api  # Ajusta el directorio si es necesario
           zip -g ../api.zip -r .
+
       # Step-8 Verify Zip Content
       - name: Verify Zip Content
         run: |
           unzip -l api.zip
+
       # Step-9 Upload zip file artifact
       - name: Upload zip file artifact
         uses: actions/upload-artifact@v2
@@ -64,28 +74,20 @@ jobs:
     needs: [CI]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     steps:
-
-      - name: Install AWS CLI
-        uses: unfor19/install-aws-cli-action@v1
+      - uses: actions/checkout@v4
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
         with:
-          version: 1
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_SECRET_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: us-east-2
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: secrets.AWS_DEFAULT_REGION
+
       - name: Download Lambda api.zip
         uses: actions/download-artifact@v2
         with:
           name: api
-          
       - name: Upload to S3
         run: aws s3 cp api.zip s3://fastapi1243/api.zip
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_SECRET_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: us-east-2
-          
+
       - name: Deploy new Lambda
         run: aws lambda update-function-code --function-name fastapi --s3-bucket fastapi1243 --s3-key api.zip
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_SECRET_ACCESS_KEY_ID }}

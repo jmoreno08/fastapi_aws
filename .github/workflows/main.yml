@@ -51,7 +51,7 @@ jobs:
           cd ./venv/lib/python3.10/site-packages
           zip -r9 ../../../../api.zip .
           cd - # go back to root
-          zip -g api.zip -r ./api # Ajusta la ruta de 'api' según sea necesario
+          zip -g api.zip -r *.py # Ajusta la ruta de 'api' según sea necesario
 
       # Step-7: Verify Zip Content
       - name: Verify Zip Content

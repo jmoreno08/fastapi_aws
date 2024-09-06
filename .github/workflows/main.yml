@@ -6,21 +6,18 @@ on:
       - main 
 
 jobs:
-  CI:
+CI:
     runs-on: ubuntu-latest
 
     steps:
-      # Step-1: Checkout code
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # Step-2: Set up Python
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
 
-      # Step-3: Cache pip dependencies
       - name: Cache pip dependencies
         uses: actions/cache@v3
         id: cache-pip
@@ -30,20 +27,17 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
-      # Step-4: Install dependencies
       - name: Install dependencies
         run: |
           python -m venv venv
           source venv/bin/activate
           pip install -r requirements.txt
 
-      # Step-5: Run Tests
       - name: Run Tests
         run: |
           source venv/bin/activate
           pytest
 
-      # Step-6: Create archive of dependencies and API files
       - name: Create archive of dependencies and API files
         run: |
           source venv/bin/activate
@@ -53,11 +47,9 @@ jobs:
           cd - # go back to root
           zip -g build/api.zip -r ./api # Ajusta la ruta de 'api' según sea necesario
 
-      # Step-7: Verify Zip Content
       - name: Verify Zip Content
         run: unzip -l build/api.zip
 
-      # Step-8: Upload zip file artifact
       - name: Upload zip file artifact
         uses: actions/upload-artifact@v3
         with:
@@ -70,48 +62,49 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
     steps:
-      # Step-1: Checkout code
       - uses: actions/checkout@v4
 
-      # Step-3: Debug AWS Credentials
-      - name: Debug AWS Credentials
-        run: |
-          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}"
-          echo "AWS_SECRET_ACCESS_KEY is set" # To avoid exposing it in logs
-          echo "AWS_REGION=${{ secrets.AWS_DEFAULT_REGION }}"
-          aws sts get-caller-identity
-
-      # Step-2: Configure AWS credentials
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-2 
+          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
 
-      # Step-3: Download Lambda artifact
-      - name: Download Lambda api.zip
+      - name: Debug AWS Credentials with Verbose Output
+        run: |
+          set -x # Habilita modo de depuración
+          aws sts get-caller-identity --debug
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+
+      - name: Download Lambda artifact
         uses: actions/download-artifact@v3
         with:
           name: api
 
-      # Step-4: Upload to S3
       - name: Upload to S3
         run: |
           aws s3 cp api.zip s3://fastapi1243/api.zip
         env:
-          AWS_REGION: us-east-2
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
 
-      # Step-5: Deploy new Lambda
       - name: Deploy new Lambda
         run: |
           aws lambda update-function-code --function-name fastapi --s3-bucket fastapi1243 --s3-key api.zip
         env:
-          AWS_REGION: us-east-2
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
 
-      # Step-6: Verify Deployment
       - name: Verify Lambda Deployment
         run: |
           aws lambda get-function --function-name fastapi
         env:
-          AWS_REGION: us-east-2
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION }}

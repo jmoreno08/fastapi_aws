@@ -18,9 +18,8 @@ jobs:
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-west-2  # Ajusta la región según sea necesario
+        aws-region: us-east-2  # Asegúrate de que esta es la región correcta
 
     - name: Deploy to AWS
       run: |
-        # Comandos de AWS CLI
-        aws s3 ls  # Ejemplo: listar buckets en S3
+        aws s3 ls  # Este es un ejemplo de comando AWS CLI

@@ -63,12 +63,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - name: Configure AWS Credentials 1
+    - name: Configure AWS Credentials 1
       id: creds
       uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-region: us-east-2
-        role-to-assume: arn:aws:iam::038462791127:user/pipeline_githubActions
+        role-to-assume: arn:aws:iam::123456789100:role/my-github-actions-role
         output-credentials: true
     - name: get caller identity 1
       run: |

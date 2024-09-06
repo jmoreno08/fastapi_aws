@@ -47,22 +47,21 @@ jobs:
       - name: Create archive of dependencies and API files
         run: |
           source venv/bin/activate
-          mkdir -p build
-          cd ./venv/lib/python3.10/site-packages
-          zip -r9 ../../../../api.zip .
-          cd - # go back to root
-          zip -g api.zip -r *.py # Ajusta la ruta de 'api' según sea necesario
+          cd venv/lib/python3.10/site-packages
+          zip -r9 path/to/root/of/project/function.zip
+          cd path/to/root/of/project
+          zip -g ./function.zip -r app
 
       # Step-7: Verify Zip Content
       - name: Verify Zip Content
-        run: unzip -l api.zip
+        run: unzip -l function.zip
 
       # Step-8: Upload zip file artifact
       - name: Upload zip file artifact
         uses: actions/upload-artifact@v3
         with:
           name: api
-          path: api.zip
+          path: function.zip
           
   CD:
     runs-on: ubuntu-latest
@@ -85,15 +84,15 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       # Step-3: Download Lambda api.zip
-      - name: Download Lambda api.zip
+      - name: Download Lambda function.zip
         uses: actions/download-artifact@v2
         with:
           name: api
 
       # Step-4: Upload to S3
       - name: Upload to S3
-        run: aws s3 cp api.zip s3://fastapi1243/api.zip
+        run: aws s3 cp function.zip s3://fastapi1243/function.zip
 
       # Step-5: Deploy new Lambda
       - name: Deploy new Lambda
-        run: aws lambda update-function-code --function-name fastapi --s3-bucket fastapi1243 --s3-key api.zip
+        run: aws lambda update-function-code --function-name fastapi --s3-bucket fastapi1243 --s3-key function.zip

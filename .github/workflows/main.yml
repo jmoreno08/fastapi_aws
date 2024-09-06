@@ -62,7 +62,6 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
     steps:
-      
       - name: Checkout Repository
       uses: actions/checkout@v2
       with:

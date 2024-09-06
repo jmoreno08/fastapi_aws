@@ -72,6 +72,14 @@ jobs:
     steps:
       # Step-1: Checkout code
       - uses: actions/checkout@v4
+      
+      # Step-3: Debug AWS Credentials
+      - name: Debug AWS Credentials
+      run: |
+        echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}"
+        echo "AWS_SECRET_ACCESS_KEY is set" # To avoid exposing it in logs
+        echo "AWS_REGION=${{ secrets.AWS_DEFAULT_REGION }}"
+        aws sts get-caller-identity
 
       # Step-2: Configure AWS credentials
       - name: Configure AWS credentials

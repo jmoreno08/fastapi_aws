@@ -6,55 +6,55 @@ on:
       - main 
 
 jobs:
-CI:
-    runs-on: ubuntu-latest
+  CI:
+      runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      steps:
+        - name: Checkout Code
+          uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
+        - name: Set up Python
+          uses: actions/setup-python@v4
+          with:
+            python-version: '3.10'
 
-      - name: Cache pip dependencies
-        uses: actions/cache@v3
-        id: cache-pip
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
+        - name: Cache pip dependencies
+          uses: actions/cache@v3
+          id: cache-pip
+          with:
+            path: ~/.cache/pip
+            key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+            restore-keys: |
+              ${{ runner.os }}-pip-
 
-      - name: Install dependencies
-        run: |
-          python -m venv venv
-          source venv/bin/activate
-          pip install -r requirements.txt
+        - name: Install dependencies
+          run: |
+            python -m venv venv
+            source venv/bin/activate
+            pip install -r requirements.txt
 
-      - name: Run Tests
-        run: |
-          source venv/bin/activate
-          pytest
+        - name: Run Tests
+          run: |
+            source venv/bin/activate
+            pytest
 
-      - name: Create archive of dependencies and API files
-        run: |
-          source venv/bin/activate
-          mkdir -p build
-          cd ./venv/lib/python3.10/site-packages
-          zip -r9 ../../../../build/api.zip .
-          cd - # go back to root
-          zip -g build/api.zip -r ./api # Ajusta la ruta de 'api' según sea necesario
+        - name: Create archive of dependencies and API files
+          run: |
+            source venv/bin/activate
+            mkdir -p build
+            cd ./venv/lib/python3.10/site-packages
+            zip -r9 ../../../../build/api.zip .
+            cd - # go back to root
+            zip -g build/api.zip -r ./api # Ajusta la ruta de 'api' según sea necesario
 
-      - name: Verify Zip Content
-        run: unzip -l build/api.zip
+        - name: Verify Zip Content
+          run: unzip -l build/api.zip
 
-      - name: Upload zip file artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: api
-          path: build/api.zip
+        - name: Upload zip file artifact
+          uses: actions/upload-artifact@v3
+          with:
+            name: api
+            path: build/api.zip
 
   CD:
     runs-on: ubuntu-latest

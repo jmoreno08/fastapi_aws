@@ -79,39 +79,31 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
+          aws-region: us-east-2 
 
-      # Step-3: Debug AWS Credentials
-      - name: Debug AWS Credentials
-        run: aws sts get-caller-identity
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
-
-      # Step-4: Download Lambda artifact
+      # Step-3: Download Lambda artifact
       - name: Download Lambda api.zip
         uses: actions/download-artifact@v3
         with:
           name: api
 
-      # Step-5: Upload to S3
+      # Step-4: Upload to S3
       - name: Upload to S3
         run: |
           aws s3 cp api.zip s3://fastapi1243/api.zip
         env:
-          AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+          AWS_REGION: us-east-2
 
-      # Step-6: Deploy new Lambda
+      # Step-5: Deploy new Lambda
       - name: Deploy new Lambda
         run: |
           aws lambda update-function-code --function-name fastapi --s3-bucket fastapi1243 --s3-key api.zip
         env:
-          AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+          AWS_REGION: us-east-2
 
-      # Step-7: Verify Deployment
+      # Step-6: Verify Deployment
       - name: Verify Lambda Deployment
         run: |
           aws lambda get-function --function-name fastapi
         env:
-          AWS_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+          AWS_REGION: us-east-2

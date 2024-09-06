@@ -62,14 +62,17 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
     steps:
-      - uses: actions/checkout@v4
-      - name: Configure AWS Credentials
-        id: creds
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-region: us-east-2
-          role-to-assume: arn:aws:iam::038462791127:user/pipeline_githubActions
-          output-credentials: true
-      - name: get caller identity 1
-        run: |
-          aws sts get-caller-identity
+      - name: Checkout Repository
+          uses: actions/checkout@v4
+
+      - name: Setup AWS CLI
+      uses: aws-actions/configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-west-2 # Modify this to your desired AWS region
+
+    - name: Print changed files # To properly debug what is being deployed (It can be removed).
+      run: |
+        echo "List of changed files:" 
+        echo $(git diff --name-only HEAD^ HEAD)

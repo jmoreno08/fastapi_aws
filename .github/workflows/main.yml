@@ -68,7 +68,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: us-east-2
-          role-to-assume: arn:aws:iam::123456789100:role/pipeline_githubActions
+          role-to-assume: arn:aws:iam::038462791127:user/pipeline_githubActions
           output-credentials: true
       - name: get caller identity 1
         run: |

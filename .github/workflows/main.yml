@@ -51,7 +51,7 @@ jobs:
           cd venv/lib/python3.10/site-packages
           zip -r9 $GITHUB_WORKSPACE/function.zip .
           cd $GITHUB_WORKSPACE
-          zip -g ./function.zip -r api
+          zip -g ./function.zip -r app/api
 
       # Step-7: Verify Zip Content
       - name: Verify Zip Content

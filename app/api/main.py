@@ -6,6 +6,6 @@ app = FastAPI()
 
 @app.get("/")
 async def root():
-    return{"message":"Hola el moreno"}
+    return{"message":"Hola el mo"}
 
 handler = Mangum(app=app)

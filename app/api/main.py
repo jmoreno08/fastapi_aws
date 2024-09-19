@@ -8,4 +8,8 @@ app = FastAPI()
 async def root():
     return{"message":"Hola el mo"}
 
+@app.get("/docs")
+def read_docs():
+    return {"docs": "Este es el punto de documentación de FastAPI."}
+
 handler = Mangum(app=app)

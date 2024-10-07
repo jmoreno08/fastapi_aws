@@ -30,11 +30,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
-      - name: Install dependencies
+      - name: Install python
         run: |
           python -m venv venv
           source venv/bin/activate
-          pip install -r requirements.txt -t dependencies/
+          pip install -r requirements.txt -t python/
 
       - name: Install AWS CLI
         run: sudo apt-get install -y awscli
@@ -53,16 +53,16 @@ jobs:
         if: steps.cache-pip.outputs.cache-hit != 'true'
         run: |
           cd dependencies
-          zip -r9 $GITHUB_WORKSPACE/dependencies.zip .
+          zip -r9 $GITHUB_WORKSPACE/python.zip .
 
-      - name: Upload dependencies to S3
+      - name: Upload python to S3
         if: steps.cache-pip.outputs.cache-hit != 'true'
-        run: aws s3 cp dependencies.zip s3://fastapi1243/dependencies.zip
+        run: aws s3 cp python.zip s3://fastapi1243/python.zip
 
       - name: Update Lambda Layer
         if: steps.cache-pip.outputs.cache-hit != 'true'
         run: |
-          aws lambda publish-layer-version --layer-name layer_test --content S3Bucket=fastapi1243,S3Key=dependencies.zip
+          aws lambda publish-layer-version --layer-name layer_test --content S3Bucket=fastapi1243,S3Key=python.zip
 
       - name: Create archive of API files
         run: |

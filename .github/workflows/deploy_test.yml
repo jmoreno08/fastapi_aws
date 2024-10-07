@@ -51,17 +51,14 @@ jobs:
         run: aws s3 ls
 
       - name: Create archive of dependencies
-        if: steps.cache-pip.outputs.cache-hit != 'true'
         run: |
           cd dependencies
           zip -r9 $GITHUB_WORKSPACE/python.zip .
 
       - name: Upload python to S3
-        if: steps.cache-pip.outputs.cache-hit != 'true'
         run: aws s3 cp python.zip s3://fastapi1243/python.zip
 
       - name: Update Lambda Layer
-        if: steps.cache-pip.outputs.cache-hit != 'true'
         run: |
           aws lambda publish-layer-version --layer-name layer_test --content S3Bucket=fastapi1243,S3Key=python.zip
 

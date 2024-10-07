@@ -52,7 +52,7 @@ jobs:
 
       - name: Create archive of dependencies
         run: |
-          cd dependencies
+          cd python
           zip -r9 $GITHUB_WORKSPACE/python.zip .
 
       - name: Upload python to S3

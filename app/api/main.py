@@ -22,7 +22,7 @@ app.add_middleware(
 
 @app.get("/")
 async def root():
-    return{"message":"Hola el mo"}
+    return{"message":"Hola fast api"}
 
 
 handler = Mangum(app=app)

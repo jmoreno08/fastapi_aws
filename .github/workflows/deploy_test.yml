@@ -5,12 +5,15 @@ on:
     branches: 
       - dev
 
+env:
+  S3_BUCKET: fastapi1243
+  LAMBDA_NAME: fastapi
+
 jobs:
 
   CI:
     runs-on: ubuntu-latest
     environment: production
-
 
     steps:
       - name: Checkout Code
@@ -30,7 +33,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
-      - name: Install python
+      - name: Install python dependencies
+        if: steps.cache-pip.outputs.cache-hit != 'true'
         run: |
           python -m venv venv
           source venv/bin/activate
@@ -47,43 +51,27 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Verificar conexión con S3
-        run: aws s3 ls
-
-      - name: Create archive of dependencies
+      - name: Create and upload dependencies archive
         run: |
-          cd python
-          zip -r9 $GITHUB_WORKSPACE/python.zip .
-
-      - name: Upload python to S3
-        run: aws s3 cp python.zip s3://fastapi1243/python.zip
+          zip -r9 python.zip python/
+          aws s3 cp python.zip s3://${{ env.S3_BUCKET }}/python.zip
 
       - name: Update Lambda Layer
+        if: steps.cache-pip.outputs.cache-hit != 'true'
         run: |
-          aws lambda publish-layer-version --layer-name layer_test --content S3Bucket=fastapi1243,S3Key=python.zip
+          aws lambda publish-layer-version --layer-name layer_test --content S3Bucket=${{ env.S3_BUCKET }},S3Key=python.zip
 
-      - name: Create archive of API files
+      - name: Create and upload API files archive
         run: |
-          cd $GITHUB_WORKSPACE
-          zip -r9 $GITHUB_WORKSPACE/api.zip app
-
-      - name: Verify Zip Content
-        run: unzip -l api.zip
-
-      - name: Upload app files to S3
-        run: aws s3 cp api.zip s3://fastapi1243/api.zip
+          zip -r9 api.zip app
+          aws s3 cp api.zip s3://${{ env.S3_BUCKET }}/api.zip
 
   CD:
     runs-on: ubuntu-latest
     needs: [CI]
     environment: production
 
-    if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
-
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -94,4 +82,4 @@ jobs:
       - name: Deploy new Lambda
         run: |
           set -e
-          aws lambda update-function-code --function-name fastapi --s3-bucket fastapi1243 --s3-key api.zip
+          aws lambda update-function-code --function-name ${{ env.LAMBDA_NAME }} --s3-bucket ${{ env.S3_BUCKET }} --s3-key api.zip

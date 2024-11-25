@@ -78,7 +78,6 @@ jobs:
     needs: [CI]
     environment: production
 
-    if: github.ref == 'refs/heads/dev' && github.event_name == 'push'
 
     steps:
       - name: Checkout Code

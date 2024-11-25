@@ -72,6 +72,7 @@ jobs:
             --compatible-runtimes python3.10 \
             --query 'LayerVersionArn' --output text)
           echo "LAYER_VERSION_ARN=$LAYER_VERSION_ARN" >> $GITHUB_ENV
+          echo "Using layer ARN: ${{ env.LAYER_VERSION_ARN }}"
 
       - name: Package API files
         run: |

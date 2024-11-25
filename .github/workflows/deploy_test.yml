@@ -9,7 +9,6 @@ env:
   S3_BUCKET: fastapi1243
   LAYER_NAME: python-libraries
   FUNCTION_NAME: fastapi
-  LAYER_VERSION_ARN: 
 
 jobs:
   CI:
@@ -18,71 +17,29 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v2
         with:
-          python-version: '3.10'
-
-      - name: Cache pip dependencies
-        uses: actions/cache@v3
-        id: cache-pip
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
-      - name: Install dependencies
-        run: |
-          python -m venv venv
-          source venv/bin/activate
-          pip install --upgrade pip
-          pip install -r requirements.txt -t python/lib/python3.10/site-packages/
+          python-version: 3.9
 
       - name: Install AWS CLI
-        run: sudo apt-get install -y awscli
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
-      - name: Verify S3 connection
-        run: aws s3 ls s3://$S3_BUCKET
-
-      - name: Package dependencies
         run: |
-          cd python
-          zip -r9 $GITHUB_WORKSPACE/python.zip .
+          sudo apt-get update
+          sudo apt-get install -y awscli
 
-      - name: Upload dependencies to S3
-        run: aws s3 cp $GITHUB_WORKSPACE/python.zip s3://$S3_BUCKET/python.zip
-
-      - name: Update Lambda Layer
+      - name: Update Layer and Get ARN
         id: update_layer
         run: |
-          LAYER_VERSION_ARN=$(aws lambda publish-layer-version \
-            --layer-name $LAYER_NAME \
-            --content S3Bucket=$S3_BUCKET,S3Key=python.zip \
-            --compatible-architectures x86_64 \
-            --compatible-runtimes python3.10 \
-            --query 'LayerVersionArn' --output text)
+          # Publica una nueva versión de la capa y obtiene el ARN
+          LAYER_VERSION_ARN=$(aws lambda publish-layer-version --layer-name ${{ env.LAYER_NAME }} --zip-file fileb://layer.zip --query 'LayerVersionArn' --output text)
           echo "LAYER_VERSION_ARN=$LAYER_VERSION_ARN" >> $GITHUB_ENV
-          echo "Using layer ARN: ${{ env.LAYER_VERSION_ARN }}"
 
-      - name: Package API files
-        run: |
-          zip -r9 api.zip api
+      - name: Print LAYER_VERSION_ARN
+        run: echo "LAYER_VERSION_ARN is ${{ env.LAYER_VERSION_ARN }}"
 
-      - name: Verify API Zip Content
-        run: unzip -l api.zip
-
-      - name: Upload API files to S3
-        run: aws s3 cp api.zip s3://$S3_BUCKET/api.zip
+      # Agrega aquí otros pasos necesarios para tu flujo de trabajo
 
   CD:
     runs-on: ubuntu-latest

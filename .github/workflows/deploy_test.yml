@@ -40,10 +40,15 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt -t python/
 
-      - name: Install and configure AWS CLI
-        run: |
-          sudo apt-get install -y awscli
-          aws configure set region ${{ secrets.AWS_REGION }}
+      - name: Install AWS CLI
+        run: sudo apt-get install -y awscli
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Verify S3 connection
         run: aws s3 ls s3://$S3_BUCKET
@@ -81,10 +86,15 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Install and configure AWS CLI
-        run: |
-          sudo apt-get install -y awscli
-          aws configure set region ${{ secrets.AWS_REGION }}
+      - name: Install AWS CLI
+        run: sudo apt-get install -y awscli
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Deploy new Lambda version
         run: |

@@ -9,6 +9,7 @@ env:
   S3_BUCKET: fastapi1243
   LAYER_NAME: python-libraries
   FUNCTION_NAME: fastapi
+  LAYER_VERSION_ARN: ''
 
 jobs:
   CI:

@@ -110,13 +110,6 @@ jobs:
           echo "Lambda function last modified: $status"
           # Aquí podrías agregar lógica para verificar si el estado de la función está "en progreso" y esperar si es necesario.
 
-      - name: Deploy new Lambda version
-        run: |
-          aws lambda update-function-code \
-            --function-name $FUNCTION_NAME \
-            --s3-bucket $S3_BUCKET \
-            --s3-key api.zip
-
       - name: Update Lambda function with new layer
         run: |
           echo "Using layer ARN: ${{ env.LAYER_VERSION_ARN }}"

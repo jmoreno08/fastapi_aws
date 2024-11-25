@@ -16,6 +16,9 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
 
+    outputs:
+      layer_version_arn: ${{ steps.update_layer.outputs.layer_version_arn }}
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -71,7 +74,7 @@ jobs:
             --compatible-architectures x86_64 \
             --compatible-runtimes python3.10 \
             --query 'LayerVersionArn' --output text)
-          echo "LAYER_VERSION_ARN=$LAYER_VERSION_ARN" >> $GITHUB_ENV
+          echo "::set-output name=layer_version_arn::$LAYER_VERSION_ARN"
       
       - name: Verify Layer ARN
         run: echo "LAYER_VERSION_ARN is ${{ env.LAYER_VERSION_ARN }}"
@@ -112,7 +115,7 @@ jobs:
 
       - name: Update Lambda function with new layer
         run: |
-          echo "Using layer ARN: ${{ env.LAYER_VERSION_ARN }}"
+          echo "Using layer ARN: ${{ needs.CI.outputs.layer_version_arn }}"
           aws lambda update-function-configuration \
             --function-name $FUNCTION_NAME \
-            --layers ${{ env.LAYER_VERSION_ARN }}
+            --layers ${{ needs.CI.outputs.layer_version_arn }}

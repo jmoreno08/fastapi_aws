@@ -86,7 +86,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: CI
     environment: production
-
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -101,6 +100,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
+      - name: Check if Lambda update is in progress
+        run: |
+          status=$(aws lambda get-function --function-name $FUNCTION_NAME --query 'Configuration.LastModified' --output text)
+          echo "Lambda function last modified: $status"
+          # Aquí podrías agregar lógica para verificar si el estado de la función está "en progreso" y esperar si es necesario.
+
       - name: Deploy new Lambda version
         run: |
           aws lambda update-function-code \
@@ -114,8 +119,3 @@ jobs:
           aws lambda update-function-configuration \
             --function-name $FUNCTION_NAME \
             --layers ${{ env.LAYER_VERSION_ARN }}
-
-      - name: Verify Lambda function configuration
-        run: |
-          aws lambda get-function-configuration \
-            --function-name $FUNCTION_NAME

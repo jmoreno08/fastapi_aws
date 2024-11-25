@@ -9,6 +9,7 @@ env:
   S3_BUCKET: fastapi1243
   LAYER_NAME: python-libraries
   FUNCTION_NAME: fastapi
+  
 
 jobs:
   CI:
@@ -38,7 +39,7 @@ jobs:
           python -m venv venv
           source venv/bin/activate
           pip install --upgrade pip
-          pip install -r requirements.txt -t python/
+          pip install -r requirements.txt -t python/lib/python3.10/site-packages/
 
       - name: Install AWS CLI
         run: sudo apt-get install -y awscli
@@ -62,10 +63,13 @@ jobs:
         run: aws s3 cp $GITHUB_WORKSPACE/python.zip s3://$S3_BUCKET/python.zip
 
       - name: Update Lambda Layer
+        id: update_layer
         run: |
-          aws lambda publish-layer-version \
+          LAYER_VERSION_ARN=$(aws lambda publish-layer-version \
             --layer-name $LAYER_NAME \
-            --content S3Bucket=$S3_BUCKET,S3Key=python.zip
+            --content S3Bucket=$S3_BUCKET,S3Key=python.zip \
+            --query 'LayerVersionArn' --output text)
+          echo "LAYER_VERSION_ARN=$LAYER_VERSION_ARN" >> $GITHUB_ENV
 
       - name: Package API files
         run: |
@@ -102,3 +106,14 @@ jobs:
             --function-name $FUNCTION_NAME \
             --s3-bucket $S3_BUCKET \
             --s3-key api.zip
+
+      - name: Update Lambda function with new layer
+        run: |
+          aws lambda update-function-configuration \
+            --function-name $FUNCTION_NAME \
+            --layers ${{ env.LAYER_VERSION_ARN }}
+
+      - name: Verify Lambda function configuration
+        run: |
+          aws lambda get-function-configuration \
+            --function-name $FUNCTION_NAME

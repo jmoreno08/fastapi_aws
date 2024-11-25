@@ -9,7 +9,6 @@ env:
   S3_BUCKET: fastapi1243
   LAYER_NAME: python-libraries
   FUNCTION_NAME: fastapi
-  
 
 jobs:
   CI:
@@ -68,6 +67,8 @@ jobs:
           LAYER_VERSION_ARN=$(aws lambda publish-layer-version \
             --layer-name $LAYER_NAME \
             --content S3Bucket=$S3_BUCKET,S3Key=python.zip \
+            --compatible-architectures x86_64 \
+            --compatible-runtimes python3.10 \
             --query 'LayerVersionArn' --output text)
           echo "LAYER_VERSION_ARN=$LAYER_VERSION_ARN" >> $GITHUB_ENV
 
@@ -109,6 +110,7 @@ jobs:
 
       - name: Update Lambda function with new layer
         run: |
+          echo "Using layer ARN: ${{ env.LAYER_VERSION_ARN }}"
           aws lambda update-function-configuration \
             --function-name $FUNCTION_NAME \
             --layers ${{ env.LAYER_VERSION_ARN }}

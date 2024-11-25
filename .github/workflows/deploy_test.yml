@@ -69,7 +69,7 @@ jobs:
 
       - name: Package API files
         run: |
-          zip -r9 api.zip app
+          zip -r9 api.zip api
 
       - name: Verify API Zip Content
         run: unzip -l api.zip

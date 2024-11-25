@@ -7,7 +7,7 @@ on:
 
 env:
   S3_BUCKET: fastapi1243
-  LAYER_NAME: layer_test
+  LAYER_NAME: python-libraries
   FUNCTION_NAME: fastapi
 
 jobs:

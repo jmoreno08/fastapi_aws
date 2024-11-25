@@ -16,9 +16,6 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
 
-    outputs:
-      layer_version_arn: ${{ steps.update_layer.outputs.layer_version_arn }}
-
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -74,7 +71,7 @@ jobs:
             --compatible-architectures x86_64 \
             --compatible-runtimes python3.10 \
             --query 'LayerVersionArn' --output text)
-          echo "::set-output name=layer_version_arn::$LAYER_VERSION_ARN"
+          echo "LAYER_VERSION_ARN=$LAYER_VERSION_ARN" >> $GITHUB_ENV
       
       - name: Verify Layer ARN
         run: echo "LAYER_VERSION_ARN is ${{ env.LAYER_VERSION_ARN }}"
@@ -107,15 +104,9 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Check if Lambda update is in progress
-        run: |
-          status=$(aws lambda get-function --function-name $FUNCTION_NAME --query 'Configuration.LastModified' --output text)
-          echo "Lambda function last modified: $status"
-          # Aquí podrías agregar lógica para verificar si el estado de la función está "en progreso" y esperar si es necesario.
-
       - name: Update Lambda function with new layer
         run: |
-          echo "Using layer ARN: ${{ needs.CI.outputs.layer_version_arn }}"
+          echo "Using layer ARN: ${{ env.LAYER_VERSION_ARN }}"
           aws lambda update-function-configuration \
             --function-name $FUNCTION_NAME \
-            --layers ${{ needs.CI.outputs.layer_version_arn }}
+            --layers ${{ env.LAYER_VERSION_ARN }}

@@ -9,6 +9,7 @@ env:
   S3_BUCKET: fastapi1243
   LAYER_NAME: python-libraries
   FUNCTION_NAME: fastapi
+  LAYER_VERSION_ARN: 
 
 jobs:
   CI:
@@ -86,8 +87,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: CI
     environment: production
-    env:
-      LAYER_VERSION_ARN: 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -107,6 +106,13 @@ jobs:
           status=$(aws lambda get-function --function-name $FUNCTION_NAME --query 'Configuration.LastModified' --output text)
           echo "Lambda function last modified: $status"
           # Aquí podrías agregar lógica para verificar si el estado de la función está "en progreso" y esperar si es necesario.
+
+      - name: Deploy new Lambda version
+        run: |
+          aws lambda update-function-code \
+            --function-name $FUNCTION_NAME \
+            --s3-bucket $S3_BUCKET \
+            --s3-key api.zip
 
       - name: Update Lambda function with new layer
         run: |
